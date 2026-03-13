@@ -12,9 +12,11 @@ interface DivinationProps {
 }
 
 type DivinationPhase = 'waiting' | 'primed' | 'casting' | 'revealed' | 'complete';
+type MotionPermissionState = 'unsupported' | 'prompt' | 'granted' | 'denied';
 
 const SHAKE_THRESHOLD = 16;
-const SHAKE_STOP_DELAY = 220;
+const SHAKE_STOP_DELAY = 320;
+const idleImageSrc = assetUrl('assets/divination-idle.png');
 const shakeVideoSrc = assetUrl('assets/divination-shake.mp4');
 const throwVideoSrc = assetUrl('assets/divination-throw.mp4');
 
@@ -25,9 +27,11 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
   const [statusText, setStatusText] = useState('想着你的问题，先轻轻摇动手机。');
   const [showThrowVideo, setShowThrowVideo] = useState(false);
   const [shakeEnabled, setShakeEnabled] = useState(false);
+  const [isShakeVideoActive, setIsShakeVideoActive] = useState(false);
   const [hasPrimedThrow, setHasPrimedThrow] = useState(false);
   const [showDesktopHint] = useState(true);
   const [isDesktopShaking, setIsDesktopShaking] = useState(false);
+  const [motionPermission, setMotionPermission] = useState<MotionPermissionState>('unsupported');
 
   const shakeVideoRef = useRef<HTMLVideoElement | null>(null);
   const throwVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -46,6 +50,23 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
   }, [tosses.length]);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !('DeviceMotionEvent' in window)) {
+      setMotionPermission('unsupported');
+      return;
+    }
+
+    const deviceMotion = DeviceMotionEvent as typeof DeviceMotionEvent & {
+      requestPermission?: () => Promise<'granted' | 'denied'>;
+    };
+
+    setMotionPermission(typeof deviceMotion.requestPermission === 'function' ? 'prompt' : 'granted');
+  }, []);
+
+  useEffect(() => {
+    if (motionPermission !== 'granted') {
+      return undefined;
+    }
+
     const handleMotion = (event: DeviceMotionEvent) => {
       const { x = 0, y = 0, z = 0 } = event.accelerationIncludingGravity || {};
       const force = Math.abs(x) + Math.abs(y) + Math.abs(z);
@@ -57,7 +78,7 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
       setShakeEnabled(true);
       setHasPrimedThrow(true);
       setPhase('primed');
-      setStatusText('继续想着这件事，然后轻点画面，抛出这一爻。');
+      setStatusText('已经感到铜钱起势了，继续想着此问，然后轻点画面抛出这一爻。');
       playShakeVideo();
 
       if (stopTimerRef.current) {
@@ -69,12 +90,9 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
       }, SHAKE_STOP_DELAY);
     };
 
-    if (typeof window !== 'undefined' && 'DeviceMotionEvent' in window) {
-      window.addEventListener('devicemotion', handleMotion);
-      return () => window.removeEventListener('devicemotion', handleMotion);
-    }
-    return undefined;
-  }, []);
+    window.addEventListener('devicemotion', handleMotion);
+    return () => window.removeEventListener('devicemotion', handleMotion);
+  }, [motionPermission]);
 
   useEffect(() => {
     if (tosses.length !== 6) return;
@@ -109,9 +127,12 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
     if (!video) return;
 
     video.muted = true;
+    setIsShakeVideoActive(true);
     const playPromise = video.play();
     if (playPromise) {
-      playPromise.catch(() => undefined);
+      playPromise.catch(() => {
+        setIsShakeVideoActive(false);
+      });
     }
   };
 
@@ -119,6 +140,37 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
     const video = shakeVideoRef.current;
     if (!video) return;
     video.pause();
+    setIsShakeVideoActive(false);
+  };
+
+  const requestMotionAccess = async () => {
+    if (typeof window === 'undefined' || !('DeviceMotionEvent' in window)) {
+      setMotionPermission('unsupported');
+      return;
+    }
+
+    const deviceMotion = DeviceMotionEvent as typeof DeviceMotionEvent & {
+      requestPermission?: () => Promise<'granted' | 'denied'>;
+    };
+
+    if (typeof deviceMotion.requestPermission !== 'function') {
+      setMotionPermission('granted');
+      return;
+    }
+
+    try {
+      const permission = await deviceMotion.requestPermission();
+      if (permission === 'granted') {
+        setMotionPermission('granted');
+        setStatusText('体感已开启。现在轻轻摇动手机，让铜钱动起来。');
+      } else {
+        setMotionPermission('denied');
+        setStatusText('未获得体感权限。你仍可轻点画面抛掷，或开启权限后再摇动。');
+      }
+    } catch {
+      setMotionPermission('denied');
+      setStatusText('体感权限没有开启成功。你仍可轻点画面抛掷，或重试开启。');
+    }
   };
 
   const handleThrow = () => {
@@ -140,6 +192,7 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
     setShowThrowVideo(true);
     setPhase('casting');
     setHasPrimedThrow(false);
+    setIsShakeVideoActive(false);
     setStatusText('铜钱已出手，稍等它落定。');
 
     const throwVideo = throwVideoRef.current;
@@ -181,6 +234,7 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
     setTosses((current) => [...current, record]);
     setShowThrowVideo(false);
     setPhase('revealed');
+    setIsShakeVideoActive(false);
 
     const nextCount = tossCountRef.current + 1;
     if (nextCount < 6) {
@@ -260,6 +314,16 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
                 {isDesktopShaking ? '模拟摇动中' : '按住模拟摇动'}
               </button>
             ) : null}
+
+            {motionPermission === 'prompt' ? (
+              <button
+                type="button"
+                onClick={requestMotionAccess}
+                className="h-10 whitespace-nowrap rounded-full border border-[#f2d7ae]/26 bg-[#6c5431]/28 px-4 py-2 text-[11px] tracking-[0.12em] text-[#fff1d4] backdrop-blur-md transition hover:border-[#f2d7ae]/40 hover:bg-[#7b6138]/34"
+              >
+                开启体感摇卦
+              </button>
+            ) : null}
           </div>
         </div>
 
@@ -277,13 +341,23 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
               }}
               className="relative block h-screen w-full overflow-hidden bg-[#1b1410] text-left"
             >
+              <img
+                src={idleImageSrc}
+                alt="摇卦桌案"
+                className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300 ${
+                  showThrowVideo || isShakeVideoActive ? 'opacity-0' : 'opacity-100'
+                }`}
+              />
+
               <video
                 ref={shakeVideoRef}
                 muted
                 playsInline
                 loop
                 preload="auto"
-                className="absolute inset-0 h-full w-full scale-[1.02] object-cover object-center"
+                className={`absolute inset-0 h-full w-full scale-[1.02] object-cover object-center transition-opacity duration-200 ${
+                  isShakeVideoActive && !showThrowVideo ? 'opacity-100' : 'opacity-0'
+                }`}
               >
                 <source src={shakeVideoSrc} type="video/mp4" />
               </video>
@@ -319,7 +393,11 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
               <div className="pointer-events-none absolute inset-x-0 bottom-4 z-40 flex justify-center">
                 <div className="rounded-[1.4rem] border border-white/10 bg-[linear-gradient(180deg,rgba(18,18,22,0.42),rgba(18,18,22,0.24))] px-4 py-3 text-center backdrop-blur-[16px]">
                   <div className="text-xs tracking-[0.16em] text-white/72">
-                    {showDesktopHint ? '电脑预览可先按住右上角按钮模拟摇动，松开后再点击画面抛掷' : '先摇动，再轻点画面抛掷'}
+                    {motionPermission === 'prompt'
+                      ? '先点右上角开启体感摇卦。电脑预览仍可用模拟摇动。'
+                      : showDesktopHint
+                        ? '手机可直接摇动；电脑预览可先按住右上角按钮模拟摇动，松开后再点击画面抛掷'
+                        : '先摇动，再轻点画面抛掷'}
                   </div>
                 </div>
               </div>
