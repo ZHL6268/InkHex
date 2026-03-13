@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Hand, RotateCcw } from 'lucide-react';
 import { randomTossRecord } from '../constants';
+import { assetUrl } from '../lib/assets';
 import { TossRecord } from '../types';
 
 interface DivinationProps {
@@ -14,8 +15,8 @@ type DivinationPhase = 'waiting' | 'primed' | 'casting' | 'revealed' | 'complete
 
 const SHAKE_THRESHOLD = 16;
 const SHAKE_STOP_DELAY = 220;
-const shakeVideoSrc = '/assets/divination-shake.mp4';
-const throwVideoSrc = '/assets/divination-throw.mp4';
+const shakeVideoSrc = assetUrl('assets/divination-shake.mp4');
+const throwVideoSrc = assetUrl('assets/divination-throw.mp4');
 
 export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExit }) => {
   const [tosses, setTosses] = useState<TossRecord[]>([]);

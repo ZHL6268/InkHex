@@ -1,6 +1,7 @@
 import { BookContent, DivinationResult, HexagramSnapshot, ReadingSections, TossRecord } from './types';
+import { assetUrl } from './lib/assets';
 
-export const PRIEST_AVATAR = "/assets/priest-avatar.png";
+export const PRIEST_AVATAR = assetUrl('assets/priest-avatar.png');
 
 const TRIGRAMS: Record<string, { name: string; nature: string; image: string }> = {
   '111': { name: '乾', nature: '天', image: '刚健、向上、开创' },

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { BookOpenText, RotateCcw, ScrollText, SendHorizonal } from 'lucide-react';
 import { PRIEST_AVATAR } from '../constants';
+import { assetUrl } from '../lib/assets';
 import { DivinationResult, Message } from '../types';
 
 interface InterpretationProps {
@@ -13,7 +14,7 @@ interface InterpretationProps {
   onRestart: () => void;
 }
 
-const backgroundVideo = '/assets/home-background.mp4';
+const backgroundVideo = assetUrl('assets/home-background.mp4');
 
 export const Interpretation: React.FC<InterpretationProps> = ({ result, messages, isReplying, aiEnabled, onSend, onRestart }) => {
   const [bookOpen, setBookOpen] = useState(false);

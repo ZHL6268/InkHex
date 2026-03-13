@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { GoogleGenAI } from '@google/genai';
 import { Layout } from './components/Layout';
 import { buildHexagramFromTosses } from './constants';
+import { assetUrl } from './lib/assets';
 import { DivinationResult, Message, Screen, TossRecord } from './types';
 import { Startup } from './screens/Startup';
 import { Home } from './screens/Home';
@@ -12,6 +13,7 @@ import { Interpretation } from './screens/Interpretation';
 const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY || __APP_GEMINI_API_KEY__ || '').trim();
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 const aiEnabled = Boolean(apiKey);
+const ritualMark = assetUrl('assets/ritual-mark.png');
 
 const initialMessages: Message[] = [
   {
@@ -228,7 +230,7 @@ ${conversation.map((message) => `${message.role === 'user' ? '用户' : '道士'
               transition={{ duration: 16, ease: 'linear', repeat: Infinity }}
               className="mb-8 w-full max-w-[15rem] sm:max-w-[17rem]"
             >
-              <img src="/assets/ritual-mark.png" alt="八卦图" className="w-full object-contain" />
+              <img src={ritualMark} alt="八卦图" className="w-full object-contain" />
             </motion.div>
 
             <p className="font-headline text-[1.9rem] tracking-[0.32em] text-ink-900">卦意回卷</p>

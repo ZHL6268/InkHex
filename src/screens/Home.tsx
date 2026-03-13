@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Mic, SendHorizonal } from 'lucide-react';
+import { assetUrl } from '../lib/assets';
 import { Message } from '../types';
 
 interface HomeProps {
@@ -17,8 +18,8 @@ const suggestionList = [
   '今年财运的重点会落在哪里？',
 ];
 
-const backgroundVideo = '/assets/home-background.mp4';
-const entryTransitionVideo = '/assets/divination-entry.mp4';
+const backgroundVideo = assetUrl('assets/home-background.mp4');
+const entryTransitionVideo = assetUrl('assets/divination-entry.mp4');
 
 export const Home: React.FC<HomeProps> = ({
   messages,
