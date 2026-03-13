@@ -1,0 +1,195 @@
+@import "tailwindcss";
+
+@theme {
+  --font-headline: "Noto Serif SC", "Songti SC", serif;
+  --font-body: "Noto Serif SC", "Songti SC", serif;
+
+  --color-paper: #f6f0df;
+  --color-paper-deep: #eadfbe;
+  --color-ink-900: #1b1f20;
+  --color-ink-700: #384045;
+  --color-ink-500: #6b6b63;
+  --color-ink-400: #8e8c80;
+  --color-gold: #c6a04a;
+  --color-cinnabar: #8a2d24;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    background: #f6f0df;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background: #f6f0df;
+    color: #1b1f20;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button,
+  textarea,
+  input {
+    font: inherit;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+}
+
+@layer components {
+  .ritual-panel {
+    position: relative;
+    border: 1px solid rgba(27, 31, 32, 0.08);
+    border-radius: 2rem;
+    background:
+      linear-gradient(180deg, rgba(255, 251, 241, 0.96), rgba(243, 234, 213, 0.88)),
+      rgba(255, 255, 255, 0.58);
+    box-shadow:
+      0 20px 60px rgba(36, 25, 14, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(18px);
+  }
+
+  .seal-mark {
+    display: inline-flex;
+    height: 2.75rem;
+    width: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.9rem;
+    background: linear-gradient(180deg, #a2382d, #7e241d);
+    color: #f5ebdd;
+    font-family: var(--font-headline);
+    font-size: 1.05rem;
+    letter-spacing: 0.2em;
+    box-shadow: 0 12px 25px rgba(138, 45, 36, 0.18);
+  }
+
+  .taiji-mark {
+    border-radius: 9999px;
+    background:
+      radial-gradient(circle at center, rgba(198, 160, 74, 0.12), transparent 62%),
+      conic-gradient(from 180deg, #1b1f20 0deg 180deg, #f7f2e6 180deg 360deg);
+    box-shadow:
+      inset 0 0 0 1px rgba(27, 31, 32, 0.06),
+      0 18px 60px rgba(27, 31, 32, 0.12);
+    position: relative;
+  }
+
+  .taiji-mark::before,
+  .taiji-mark::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    width: 50%;
+    height: 50%;
+    transform: translateX(-50%);
+    border-radius: 9999px;
+  }
+
+  .taiji-mark::before {
+    top: 0;
+    background: radial-gradient(circle at center, #f7f2e6 0 16%, #1b1f20 17% 100%);
+  }
+
+  .taiji-mark::after {
+    bottom: 0;
+    background: radial-gradient(circle at center, #1b1f20 0 16%, #f7f2e6 17% 100%);
+  }
+
+  .coin-face {
+    display: flex;
+    height: 5.75rem;
+    width: 5.75rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background:
+      radial-gradient(circle at 35% 30%, rgba(255, 245, 193, 0.9), rgba(208, 154, 58, 0.92) 58%, rgba(124, 82, 27, 0.96));
+    border: 3px solid rgba(245, 232, 190, 0.4);
+    box-shadow:
+      inset 0 0 0 2px rgba(123, 82, 22, 0.28),
+      0 12px 30px rgba(23, 17, 10, 0.24);
+  }
+
+  .coin-core {
+    height: 1.4rem;
+    width: 1.4rem;
+    border: 2px solid rgba(104, 66, 19, 0.52);
+    transform: rotate(45deg);
+    background: rgba(250, 241, 211, 0.35);
+  }
+
+  .book-modal::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(125, 88, 32, 0.08), transparent 14%, transparent 86%, rgba(125, 88, 32, 0.08)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.36), transparent 10%);
+  }
+
+  .book-modal::after {
+    content: "";
+    position: absolute;
+    inset: 18px 12px;
+    pointer-events: none;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(160, 128, 72, 0.08);
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      inset 0 12px 26px rgba(255, 248, 234, 0.26);
+  }
+
+  .book-scroll {
+    position: relative;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(154, 123, 67, 0.45) transparent;
+  }
+
+  .book-scroll::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .book-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .book-scroll::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background: linear-gradient(180deg, rgba(186, 150, 88, 0.72), rgba(141, 106, 53, 0.72));
+    border: 1px solid rgba(255, 245, 219, 0.38);
+  }
+
+  .ink-loading-copy {
+    letter-spacing: 0.08em;
+    text-shadow: 0 1px 0 rgba(255, 252, 243, 0.45);
+    opacity: 0.88;
+  }
+
+  .ritual-spinner {
+    height: 4.25rem;
+    width: 4.25rem;
+    border-radius: 9999px;
+    border: 2px solid rgba(198, 160, 74, 0.22);
+    border-top-color: rgba(198, 160, 74, 0.9);
+    animation: spin 1.15s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
