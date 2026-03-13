@@ -144,7 +144,7 @@ export const Interpretation: React.FC<InterpretationProps> = ({ result, messages
           ))}
         </div>
 
-        <footer className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(40,40,44,0.72),rgba(25,25,29,0.62))] px-3 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 shadow-[0_24px_70px_rgba(0,0,0,0.4)] backdrop-blur-[24px]">
+        <footer className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(40,40,44,0.72),rgba(25,25,29,0.62))] px-2.5 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 shadow-[0_24px_70px_rgba(0,0,0,0.4)] backdrop-blur-[24px] sm:px-3">
           <div className="mb-3 flex items-center gap-3">
             <button
               onClick={() => setBookOpen(true)}
@@ -162,8 +162,8 @@ export const Interpretation: React.FC<InterpretationProps> = ({ result, messages
             </button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex min-h-[3.8rem] flex-1 items-center rounded-[1.2rem] bg-white px-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)]">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="flex min-h-[3.6rem] min-w-0 flex-1 items-center rounded-[1.2rem] bg-white px-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] sm:min-h-[3.8rem] sm:px-4">
               <textarea
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
@@ -175,12 +175,12 @@ export const Interpretation: React.FC<InterpretationProps> = ({ result, messages
                 }}
                 rows={1}
                 placeholder="你可以继续追问这卦，或补充更多情况"
-                className="max-h-28 min-h-[2.4rem] flex-1 resize-none bg-transparent py-3 text-[15px] leading-7 text-[#181818] outline-none placeholder:text-[#868686]"
+                className="max-h-28 min-h-[2.25rem] min-w-0 flex-1 resize-none bg-transparent py-3 text-[14px] leading-6 text-[#181818] outline-none placeholder:text-[#868686] sm:min-h-[2.4rem] sm:text-[15px] sm:leading-7"
               />
               <button
                 onClick={submit}
                 disabled={isReplying || !input.trim()}
-                className="ml-3 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#111216] text-white transition hover:bg-[#1c1d22] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                className="ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#111216] text-white transition hover:bg-[#1c1d22] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 sm:ml-3 sm:h-11 sm:w-11"
                 aria-label="继续追问"
               >
                 <SendHorizonal className="h-5 w-5" />
