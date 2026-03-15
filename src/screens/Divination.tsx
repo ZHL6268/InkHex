@@ -28,6 +28,7 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
   const [lastRecord, setLastRecord] = useState<TossRecord | null>(null);
   const [statusText, setStatusText] = useState('想着你的问题，先轻轻摇动手机。');
   const [showThrowVideo, setShowThrowVideo] = useState(false);
+  const [isPreparingThrow, setIsPreparingThrow] = useState(false);
   const [shakeEnabled, setShakeEnabled] = useState(false);
   const [isShakeVideoActive, setIsShakeVideoActive] = useState(false);
   const [hasPrimedThrow, setHasPrimedThrow] = useState(false);
@@ -196,23 +197,32 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
       return;
     }
 
-    pauseShakeVideo();
-    setShowThrowVideo(true);
+    const shakeVideo = shakeVideoRef.current;
+    if (shakeVideo) {
+      shakeVideo.pause();
+    }
+
+    setIsPreparingThrow(true);
+    setShowThrowVideo(false);
     setPhase('casting');
     setHasPrimedThrow(false);
-    setIsShakeVideoActive(false);
     setStatusText('铜钱已出手，稍等它落定。');
     onShakeStateChange?.(false);
-    onThrowFeedback?.();
 
     const throwVideo = throwVideoRef.current;
     if (throwVideo) {
       throwVideo.currentTime = 0;
       const playPromise = throwVideo.play();
       if (playPromise) {
-        playPromise.catch(() => finalizeThrow());
+        playPromise.catch(() => {
+          setIsPreparingThrow(false);
+          setIsShakeVideoActive(false);
+          finalizeThrow();
+        });
       }
     } else {
+      setIsPreparingThrow(false);
+      setIsShakeVideoActive(false);
       finalizeThrow();
     }
   };
@@ -244,6 +254,7 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
     setLastRecord(record);
     setTosses((current) => [...current, record]);
     setShowThrowVideo(false);
+    setIsPreparingThrow(false);
     setPhase('revealed');
     setIsShakeVideoActive(false);
     onShakeStateChange?.(false);
@@ -357,7 +368,7 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
                 src={idleImageSrc}
                 alt="摇卦桌案"
                 className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-300 ${
-                  showThrowVideo || isShakeVideoActive ? 'opacity-0' : 'opacity-100'
+                  showThrowVideo || isShakeVideoActive || isPreparingThrow ? 'opacity-0' : 'opacity-100'
                 }`}
               />
 
@@ -368,30 +379,31 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
                 loop
                 preload="auto"
                 className={`absolute inset-0 h-full w-full scale-[1.02] object-cover object-center transition-opacity duration-200 ${
-                  isShakeVideoActive && !showThrowVideo ? 'opacity-100' : 'opacity-0'
+                  (isShakeVideoActive || isPreparingThrow) && !showThrowVideo ? 'opacity-100' : 'opacity-0'
                 }`}
               >
                 <source src={shakeVideoSrc} type="video/mp4" />
               </video>
 
-              <AnimatePresence>
-                {showThrowVideo ? (
-                  <motion.video
-                    ref={throwVideoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    preload="auto"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onEnded={finalizeThrow}
-                    className="absolute inset-0 z-20 h-full w-full scale-[1.02] object-cover object-center"
-                  >
-                    <source src={throwVideoSrc} type="video/mp4" />
-                  </motion.video>
-                ) : null}
-              </AnimatePresence>
+              <motion.video
+                ref={throwVideoRef}
+                muted
+                playsInline
+                preload="auto"
+                initial={false}
+                animate={{ opacity: showThrowVideo ? 1 : 0 }}
+                transition={{ duration: 0.18 }}
+                onPlaying={() => {
+                  setShowThrowVideo(true);
+                  setIsPreparingThrow(false);
+                  setIsShakeVideoActive(false);
+                  onThrowFeedback?.();
+                }}
+                onEnded={finalizeThrow}
+                className="absolute inset-0 z-20 h-full w-full scale-[1.02] object-cover object-center"
+              >
+                <source src={throwVideoSrc} type="video/mp4" />
+              </motion.video>
 
               <div className="pointer-events-none absolute inset-0 z-30 bg-[linear-gradient(180deg,rgba(0,0,0,0.12),transparent_24%,transparent_58%,rgba(0,0,0,0.42)_100%)]" />
               <div className="pointer-events-none absolute inset-0 z-30 bg-[radial-gradient(circle_at_center,transparent_46%,rgba(0,0,0,0.16)_100%)]" />
