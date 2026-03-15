@@ -4,8 +4,10 @@ import path from 'path';
 import {defineConfig} from 'vite';
 
 export default defineConfig(({mode}) => {
+  const productionBase = process.env.VITE_BASE_PATH || '/';
+
   return {
-    base: mode === 'production' ? '/InkHex/' : '/',
+    base: mode === 'production' ? productionBase : '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
