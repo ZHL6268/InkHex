@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Mic, SendHorizonal } from 'lucide-react';
+import { SendHorizonal } from 'lucide-react';
 import { assetUrl } from '../lib/assets';
 import { Message } from '../types';
 
@@ -94,8 +94,7 @@ export const Home: React.FC<HomeProps> = ({
       ) : null}
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[480px] flex-col px-4 pb-5 pt-[max(env(safe-area-inset-top),20px)] text-white">
-        <header className="flex items-center justify-between px-2 pt-1 text-[13px] font-medium tracking-[0.18em] text-white/92">
-          <span>9:41</span>
+        <header className="flex justify-end px-2 pt-1 text-[13px] font-medium tracking-[0.18em] text-white/92">
           <div className="flex items-center gap-2">
             <div className="rounded-full border border-white/12 bg-black/14 px-3 py-1 text-[11px] tracking-[0.28em] text-white/78 backdrop-blur-md">
               墨香卜卦
@@ -168,14 +167,6 @@ export const Home: React.FC<HomeProps> = ({
           className="rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(40,40,44,0.72),rgba(25,25,29,0.62))] px-2.5 pb-[calc(env(safe-area-inset-bottom)+10px)] pt-3 shadow-[0_24px_70px_rgba(0,0,0,0.4)] backdrop-blur-[24px] sm:px-3"
         >
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <button
-              type="button"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/8 text-white/88 transition hover:bg-white/14 sm:h-11 sm:w-11"
-              aria-label="语音输入"
-            >
-              <Mic className="h-5 w-5" />
-            </button>
-
             <div className="flex min-h-[3.6rem] min-w-0 flex-1 items-center rounded-[1.2rem] bg-white px-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.4)] sm:min-h-[3.8rem] sm:px-4">
               <textarea
                 value={input}

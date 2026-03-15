@@ -9,6 +9,8 @@ interface DivinationProps {
   topic: string;
   onComplete: (tosses: TossRecord[]) => void;
   onExit: () => void;
+  onShakeStateChange?: (active: boolean) => void;
+  onThrowFeedback?: () => void;
 }
 
 type DivinationPhase = 'waiting' | 'primed' | 'casting' | 'revealed' | 'complete';
@@ -20,7 +22,7 @@ const idleImageSrc = assetUrl('assets/divination-idle.png');
 const shakeVideoSrc = assetUrl('assets/divination-shake.mp4');
 const throwVideoSrc = assetUrl('assets/divination-throw.mp4');
 
-export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExit }) => {
+export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExit, onShakeStateChange, onThrowFeedback }) => {
   const [tosses, setTosses] = useState<TossRecord[]>([]);
   const [phase, setPhase] = useState<DivinationPhase>('waiting');
   const [lastRecord, setLastRecord] = useState<TossRecord | null>(null);
@@ -80,6 +82,7 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
       setPhase('primed');
       setStatusText('已经感到铜钱起势了，继续想着此问，然后轻点画面抛出这一爻。');
       playShakeVideo();
+      onShakeStateChange?.(true);
 
       if (stopTimerRef.current) {
         window.clearTimeout(stopTimerRef.current);
@@ -122,6 +125,10 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
     };
   }, []);
 
+  useEffect(() => {
+    onShakeStateChange?.(isShakeVideoActive && phase === 'primed');
+  }, [isShakeVideoActive, onShakeStateChange, phase]);
+
   const playShakeVideo = () => {
     const video = shakeVideoRef.current;
     if (!video) return;
@@ -141,6 +148,7 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
     if (!video) return;
     video.pause();
     setIsShakeVideoActive(false);
+    onShakeStateChange?.(false);
   };
 
   const requestMotionAccess = async () => {
@@ -194,6 +202,8 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
     setHasPrimedThrow(false);
     setIsShakeVideoActive(false);
     setStatusText('铜钱已出手，稍等它落定。');
+    onShakeStateChange?.(false);
+    onThrowFeedback?.();
 
     const throwVideo = throwVideoRef.current;
     if (throwVideo) {
@@ -218,6 +228,7 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
     setPhase('primed');
     setStatusText('已模拟摇动。松开后再次轻点画面，抛出这一爻。');
     playShakeVideo();
+    onShakeStateChange?.(true);
   };
 
   const stopDesktopShake = () => {
@@ -235,6 +246,7 @@ export const Divination: React.FC<DivinationProps> = ({ topic, onComplete, onExi
     setShowThrowVideo(false);
     setPhase('revealed');
     setIsShakeVideoActive(false);
+    onShakeStateChange?.(false);
 
     const nextCount = tossCountRef.current + 1;
     if (nextCount < 6) {

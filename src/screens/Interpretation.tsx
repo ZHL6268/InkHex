@@ -20,10 +20,41 @@ export const Interpretation: React.FC<InterpretationProps> = ({ result, messages
   const [bookOpen, setBookOpen] = useState(false);
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const messageRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const priestMessageRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const previousLastPriestIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, isReplying]);
+    const lastMessage = messages[messages.length - 1];
+    const lastPriestMessage = [...messages].reverse().find((message) => message.role === 'priest');
+    const lastPriestId = lastPriestMessage?.id ?? null;
+
+    if (!lastMessage) {
+      previousLastPriestIdRef.current = null;
+      return;
+    }
+
+    if (lastMessage.role === 'user') {
+      requestAnimationFrame(() => {
+        const node = messageRefs.current[lastMessage.id];
+        node?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      });
+      return;
+    }
+
+    if (!lastPriestId) {
+      previousLastPriestIdRef.current = null;
+      return;
+    }
+
+    const behavior = previousLastPriestIdRef.current === lastPriestId ? 'auto' : previousLastPriestIdRef.current ? 'smooth' : 'auto';
+    previousLastPriestIdRef.current = lastPriestId;
+
+    requestAnimationFrame(() => {
+      const node = priestMessageRefs.current[lastPriestId];
+      node?.scrollIntoView({ behavior, block: 'start' });
+    });
+  }, [messages, result.topic]);
 
   const suggestionList = useMemo(
     () => [
@@ -51,8 +82,7 @@ export const Interpretation: React.FC<InterpretationProps> = ({ result, messages
       </div>
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-[480px] flex-col px-4 pb-5 pt-[max(env(safe-area-inset-top),20px)] text-white">
-        <header className="flex items-center justify-between px-2 pt-1 text-[13px] font-medium tracking-[0.18em] text-white/92">
-          <span>9:41</span>
+        <header className="flex justify-end px-2 pt-1 text-[13px] font-medium tracking-[0.18em] text-white/92">
           <div className="flex items-center gap-2">
             <div className="rounded-full border border-white/12 bg-black/14 px-3 py-1 text-[11px] tracking-[0.28em] text-white/78 backdrop-blur-md">
               解卦中
@@ -64,7 +94,7 @@ export const Interpretation: React.FC<InterpretationProps> = ({ result, messages
                   : 'border-amber-300/24 bg-amber-400/12 text-amber-100'
               }`}
             >
-              {aiEnabled ? 'Gemini AI' : '本地解卦'}
+              {aiEnabled ? 'OpenAI 已连接' : 'AI 暂不可用'}
             </div>
           </div>
         </header>
@@ -84,7 +114,7 @@ export const Interpretation: React.FC<InterpretationProps> = ({ result, messages
               <img
                 src={PRIEST_AVATAR}
                 alt="道士"
-                className="h-full w-full rounded-full object-cover"
+                className="h-full w-full rounded-full object-cover object-top"
                 referrerPolicy="no-referrer"
               />
             </div>
@@ -104,6 +134,12 @@ export const Interpretation: React.FC<InterpretationProps> = ({ result, messages
             {messages.map((message, index) => (
               <motion.div
                 key={message.id}
+                ref={(node) => {
+                  messageRefs.current[message.id] = node;
+                  if (message.role === 'priest') {
+                    priestMessageRefs.current[message.id] = node;
+                  }
+                }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index === messages.length - 1 ? 0.08 : 0 }}
